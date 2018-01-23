@@ -3887,6 +3887,672 @@ sink()
 
 
 
+##################################################################################################################
+myOutDir_sub2_g = paste(outDir_g, "/2_SD_CV_children_parents",  sep="") 
+if( ! file.exists(myOutDir_sub2_g) ) { dir.create(myOutDir_sub2_g, recursive = TRUE) }
+
+tiles_2two_children_g = tileMethylCounts( myobj_nor_children_g,   win.size=1000,   step.size=1000,   cov.bases = 3  )    
+meth_2two_children_g  = unite( tiles_2two_children_g, destrand=FALSE, mc.cores=16   )   ## 100% overlap
+mat_2two_children_g   = percMethylation( meth_2two_children_g )
+head(mat_2two_children_g)
+dim(mat_2two_children_g)
+
+sd_2two_children_g = rowSds(mat_2two_children_g)
+length(sd_2two_children_g)
+head(sd_2two_children_g)
+
+mean_2two_children_g = rowMeans2(mat_2two_children_g)
+length(mean_2two_children_g)
+head(mean_2two_children_g)
+
+cv_2two_children_g = sd_2two_children_g/mean_2two_children_g
+length(cv_2two_children_g)
+head(cv_2two_children_g)
+
+sd_mean_cv_2two_children_g  <- cbind(getData(meth_2two_children_g)[,1:4], sd_2two_children_g, mean_2two_children_g, cv_2two_children_g)               
+head(sd_mean_cv_2two_children_g)
+
+
+write.table(meth_2two_children_g , 
+            file = paste(myOutDir_sub2_g,   "1A_meth-tiles_children.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE,  col.names = TRUE, qmethod = c("escape", "double"),  fileEncoding = "")
+write.table(mat_2two_children_g , 
+            file = paste(myOutDir_sub2_g,   "1B_mat-tiles_children.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+write.table(sd_mean_cv_2two_children_g , 
+            file = paste(myOutDir_sub2_g,   "1C_SD-Mean-CV_children.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+
+
+
+
+
+##############
+tiles_2two_parents_g = tileMethylCounts( myobj_nor_parents_g,   win.size=1000,   step.size=1000,   cov.bases = 3  )    
+meth_2two_parents_g  = unite( tiles_2two_parents_g, destrand=FALSE, mc.cores=16   )   ## 100% overlap
+mat_2two_parents_g   = percMethylation( meth_2two_parents_g )
+head(mat_2two_parents_g)
+dim(mat_2two_parents_g)
+
+sd_2two_parents_g = rowSds(mat_2two_parents_g)
+length(sd_2two_parents_g)
+head(sd_2two_parents_g)
+
+mean_2two_parents_g = rowMeans2(mat_2two_parents_g)
+length(mean_2two_parents_g)
+head(mean_2two_parents_g)
+
+cv_2two_parents_g = sd_2two_parents_g/mean_2two_parents_g
+length(cv_2two_parents_g)
+head(cv_2two_parents_g)
+
+
+sd_mean_cv_2two_parents_g  <- cbind(getData(meth_2two_parents_g)[,1:4], sd_2two_parents_g, mean_2two_parents_g, cv_2two_parents_g)               
+head(sd_mean_cv_2two_parents_g)
+
+
+write.table(meth_2two_parents_g , 
+            file = paste(myOutDir_sub2_g,   "2A_meth-tiles_parents.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE,  col.names = TRUE, qmethod = c("escape", "double"),  fileEncoding = "")
+write.table(mat_2two_parents_g , 
+            file = paste(myOutDir_sub2_g,   "2B_mat-tiles_parents.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+write.table(sd_mean_cv_2two_parents_g , 
+            file = paste(myOutDir_sub2_g,   "2C_SD-Mean-CV_parents.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+
+
+
+#################
+dim(sd_mean_cv_2two_children_g)
+dim(sd_mean_cv_2two_parents_g)
+
+my_wdata_sd_g = data.frame( sd1 = c(sd_2two_children_g, sd_2two_parents_g),
+                            type1 = factor( c(rep("children" , times=length(sd_2two_children_g)),
+                                              rep("parents" ,  times=length(sd_2two_parents_g)) ) )
+                          )
+
+pdf( file=paste(myOutDir_sub2_g, "3A_StandardDeviation-tiles.pdf", sep="/") , width=3, height=3 )
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density")  
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 20)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 15)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 12.5)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 10)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 8)
+dev.off()
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "3B_StandardDeviation-fill-tiles.pdf", sep="/") , width=3, height=3 )
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density")  
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 20)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 15)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 12.5)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 10)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 8)
+dev.off()
+
+
+
+
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "3C_StandardDeviation-fill-alpha0.1-tiles.pdf", sep="/") , width=3, height=3 )
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density")  
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 20)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 15)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 12.5)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 10)
+ggdensity(my_wdata_sd_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Standard Deviation", 
+          xlab = "Standard Deviation (%)", ylab = "Density") + xlim(0, 8)
+dev.off()
+
+
+
+ 
+
+pdf( file=paste(myOutDir_sub2_g, "4A_StandardDeviation-CDF-tiles.pdf", sep="/"), width=3, height=3 )
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=1, 
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF")  
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 20)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 15)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 12)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 10)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 8)
+dev.off()
+
+
+ 
+pdf( file=paste(myOutDir_sub2_g, "4B_StandardDeviation-CDF-tiles.pdf", sep="/"), width=3, height=3 )
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2, 
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF")  
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 20)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 15)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 12)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 10)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 8)
+dev.off()
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "4C_StandardDeviation-CDF-tiles.pdf", sep="/"), width=3, height=3 )
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",   
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF")  
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 20)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 15)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 12)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 10)
+ggecdf(my_wdata_sd_g, x = "sd1", color = "type1", linetype = "type1",    
+       title = "Distribution of Standard Deviation", 
+       xlab = "Standard Deviation", ylab = "CDF") + xlim(0, 8)
+dev.off()
+
+
+
+png( file=paste(myOutDir_sub2_g, "5_StandardDeviation-QQplot-tiles.png", sep="/") )
+ggqqplot(my_wdata_sd_g, x = "sd1", color = "type1")
+dev.off()
+
+
+
+
+##############
+my_wdata_cv_g = data.frame( sd1 = c(cv_2two_children_g, cv_2two_parents_g),
+                            type1 = factor( c(rep("children" , times=length(cv_2two_children_g)),
+                                              rep("parents" ,  times=length(cv_2two_parents_g)) ) )
+)
+
+
+pdf( file=paste(myOutDir_sub2_g, "6A_CoefficientOfVariation-tiles.pdf", sep="/") , width=3, height=3 )
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density")  
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 1)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.5)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.3)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.2)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1", 
+          alpha = 0.5, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.15)
+dev.off()
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "6B_CoefficientOfVariation-fill-tiles.pdf", sep="/") , width=3, height=3 )
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density")  
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 1)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.5)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.3)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.2)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.2, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.15)
+dev.off()
+
+
+
+
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "6C_CoefficientOfVariation-fill-alpha0.1-tiles.pdf", sep="/") , width=3, height=3 )
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density")  
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 1)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.5)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.3)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.2)
+ggdensity(my_wdata_cv_g, x = "sd1",  add = "mean", color = "type1",  fill = "type1", 
+          alpha = 0.1, title = "Distribution of Coefficient of Variation", 
+          xlab = "Coefficient of Variation (%)", ylab = "Density") + xlim(0, 0.15)
+dev.off()
+
+
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "7A_CoefficientOfVariation-CDF-tiles.pdf", sep="/"), width=3, height=3 )
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=1, 
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF")  
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 1)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.5)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.3)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.2)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=1,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.15)
+dev.off()
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "7B_CoefficientOfVariation-CDF-tiles.pdf", sep="/"), width=3, height=3 )
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2, 
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF")  
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 1)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.5)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.3)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.2)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",  size=0.2,  
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.15)
+dev.off()
+
+
+
+pdf( file=paste(myOutDir_sub2_g, "7C_CoefficientOfVariation-CDF-tiles.pdf", sep="/"), width=3, height=3 )
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",   
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF")  
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 1)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.5)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.3)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",     
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.2)
+ggecdf(my_wdata_cv_g, x = "sd1", color = "type1", linetype = "type1",    
+       title = "Distribution of Coefficient of Variation", 
+       xlab = "Coefficient of Variation", ylab = "CDF") + xlim(0, 0.15)
+dev.off()
+
+
+
+png( file=paste(myOutDir_sub2_g, "8_CoefficientOfVariation-QQplot-tiles.png", sep="/") )
+ggqqplot(my_wdata_cv_g, x = "sd1", color = "type1")
+dev.off()
+
+
+
+
+
+##############
+dim(sd_mean_cv_2two_children_g)
+dim(sd_mean_cv_2two_parents_g)
+
+myAnnotation_1( includeRegions2 = sd_mean_cv_2two_children_g, 
+                path2 =  paste(myOutDir_sub2_g, "annotation_children", sep="/")
+              ) 
+
+myAnnotation_1( includeRegions2 = sd_mean_cv_2two_parents_g, 
+                path2 =  paste(myOutDir_sub2_g, "annotation_parents", sep="/")
+) 
+
+
+##################################################################################################################
+ 
+
+
+
+
+
+
+
+
+##################################################################################################################
+myOutDir_sub3_g = paste(outDir_g, "/3_SD_CV_allSamples",  sep="") 
+if( ! file.exists(myOutDir_sub3_g) ) { dir.create(myOutDir_sub3_g, recursive = TRUE) }
+
+tiles_2two_merge_g = tileMethylCounts( myobj_nor_merge_g,   win.size=1000,   step.size=1000,   cov.bases = 3  )    
+meth_2two_merge_g  = unite( tiles_2two_merge_g, destrand=FALSE, mc.cores=16   )   ## 100% overlap
+mat_2two_merge_g   = percMethylation( meth_2two_merge_g )
+head(mat_2two_merge_g)
+dim(mat_2two_merge_g)
+
+sd_2two_merge_g = rowSds(mat_2two_merge_g)
+length(sd_2two_merge_g)
+head(sd_2two_merge_g)
+
+mean_2two_merge_g = rowMeans2(mat_2two_merge_g)
+length(mean_2two_merge_g)
+head(mean_2two_merge_g)
+
+cv_2two_merge_g = sd_2two_merge_g/mean_2two_merge_g
+length(cv_2two_merge_g)
+head(cv_2two_merge_g)
+
+sd_mean_cv_2two_merge_g  <- cbind(getData(meth_2two_merge_g)[,1:4], sd_2two_merge_g, mean_2two_merge_g, cv_2two_merge_g)               
+head(sd_mean_cv_2two_merge_g)
+
+
+write.table(meth_2two_merge_g , 
+            file = paste(myOutDir_sub3_g,   "1A_meth-tiles_merge.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE,  col.names = TRUE, qmethod = c("escape", "double"),  fileEncoding = "")
+write.table(mat_2two_merge_g , 
+            file = paste(myOutDir_sub3_g,   "1B_mat-tiles_merge.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+write.table(sd_mean_cv_2two_merge_g , 
+            file = paste(myOutDir_sub3_g,   "1C_SD-Mean-CV_merge.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+
+
+
+##############
+dim(sd_mean_cv_2two_merge_g)
+
+myAnnotation_1( includeRegions2 = sd_mean_cv_2two_merge_g, 
+                path2 =  paste(myOutDir_sub3_g, "annotation_merge", sep="/")
+) 
+
+ 
+###########
+dim(mat_2two_merge_g)
+
+sd_2two_mergeParents_g = rowSds(mat_2two_merge_g[,27:52])
+length(sd_2two_mergeParents_g)
+head(sd_2two_mergeParents_g)
+
+mean_2two_mergeParents_g = rowMeans2(mat_2two_merge_g[,27:52])
+length(mean_2two_mergeParents_g)
+head(mean_2two_mergeParents_g)
+
+cv_2two_mergeParents_g = sd_2two_merge_g/mean_2two_merge_g
+length(cv_2two_mergeParents_g)
+head(cv_2two_mergeParents_g)
+
+sd_mean_cv_2two_mergeParents_g  <- cbind(getData(meth_2two_merge_g)[,1:4], sd_2two_mergeParents_g, 
+                                  mean_2two_mergeParents_g, cv_2two_mergeParents_g)               
+head(sd_mean_cv_2two_mergeParents_g)
+
+write.table(sd_mean_cv_2two_mergeParents_g , 
+            file = paste(myOutDir_sub3_g,   "2_SD-Mean-CV_mergeParents.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+
+
+###########
+dim(mat_2two_merge_g)
+
+sd_2two_mergeChildren_g = rowSds(mat_2two_merge_g[,1:26])
+length(sd_2two_mergeChildren_g)
+head(sd_2two_mergeChildren_g)
+
+mean_2two_mergeChildren_g = rowMeans2(mat_2two_merge_g[,1:26])
+length(mean_2two_mergeChildren_g)
+head(mean_2two_mergeChildren_g)
+
+cv_2two_mergeChildren_g = sd_2two_merge_g/mean_2two_merge_g
+length(cv_2two_mergeChildren_g)
+head(cv_2two_mergeChildren_g)
+
+sd_mean_cv_2two_mergeChildren_g  <- cbind(getData(meth_2two_merge_g)[,1:4], sd_2two_mergeChildren_g, 
+                                          mean_2two_mergeChildren_g, cv_2two_mergeChildren_g)               
+head(sd_mean_cv_2two_mergeChildren_g)
+
+write.table(sd_mean_cv_2two_mergeChildren_g , 
+            file = paste(myOutDir_sub3_g,   "3_SD-Mean-CV_mergeChildren.txt",  sep="/"), 
+            append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+            row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+
+
+############################
+
+
+
+MyScatterDiagram_1 <- function(vector2X,  vector2Y,  path2,   fileName2,   xLab2,   yLab2,  title2,  height2=4,  width2=4,  yMin2=0, yMax2=2, 
+                               xMin2=0, xMax2=2,  alpha2=0.5, diffThres2=1.5, colours2=c("red", "blue", "purple"))
+  
+  MyScatterDiagram_2 <- function(vector2X,  vector2Y,  path2,   fileName2,   xLab2,   yLab2,  title2,  
+                                 height2=4,  width2=4,  yMin2=0, yMax2=2,  xMin2=0, xMax2=2 )
+    
+    
+##################################################################################################################
+
+
+
+
+
+
+myTopPercent_1 <- function(matrixTemp2, sdParentsTemp2, pathTemp2, percentTemp2, sdMeanCV2) {
+  #matrixTemp2 =  mat_2two_merge_g
+  #sdParentsTemp2 = sd_2two_mergeParents_g
+  #pathTemp2 = paste(myOutDir_sub3_g,   "rmParetns",  sep="/")
+  #percentTemp2 = 0.01
+  #sdMeanCV2 = sd_mean_cv_2two_mergeParents_g
+  #dim(matrixTemp2)
+  #length(sdParentsTemp2)
+  if( ! file.exists(pathTemp2) ) { dir.create(pathTemp2, recursive = TRUE) }
+  
+  sdParentsTemp2_sorted <- sort( sdParentsTemp2, decreasing = TRUE )
+  threshMe <- sdParentsTemp2_sorted[length(sdParentsTemp2)*percentTemp2]
+  myBoole1 <- (sdParentsTemp2 <= threshMe)  ## will be kept
+  
+  write.table(sdParentsTemp2[!myBoole1] , 
+              file = paste(pathTemp2,   "1A_topSD_removed.txt",  sep="/"), 
+              append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+              row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+  
+  write.table(sdParentsTemp2[myBoole1] , 
+              file = paste(pathTemp2,   "1B_SD_kept.txt",  sep="/"), 
+              append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+              row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+  
+  write.table(matrixTemp2[!myBoole1,] , 
+              file = paste(pathTemp2,   "2A_topSD_removed_matrix.txt",  sep="/"), 
+              append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+              row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+  
+  write.table(matrixTemp2[myBoole1,] , 
+              file = paste(pathTemp2,   "2B_SD_kept_matrix.txt",  sep="/"), 
+              append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+              row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+  
+  write.table(sdMeanCV2[!myBoole1,] , 
+              file = paste(pathTemp2,   "3A_topSD_removed_sdMeanCV.txt",  sep="/"), 
+              append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+              row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+  
+  write.table(sdMeanCV2[myBoole1,] , 
+              file = paste(pathTemp2,   "3B_SD_kept_sdMeanCV.txt",  sep="/"), 
+              append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", 
+              row.names = FALSE, col.names = TRUE, qmethod = c("escape", "double"), fileEncoding = "")
+  
+  
+  matrixTemp2_children <- matrixTemp2[,1:26]
+  matrixTemp2_parents  <- matrixTemp2[,27:52]
+  
+  matrixTemp2_children_removed <- matrixTemp2_children[!myBoole1,]
+  matrixTemp2_children_kept   <- matrixTemp2_children[myBoole1,]
+  
+  matrixTemp2_parents_removed <- matrixTemp2_parents[!myBoole1,]
+  matrixTemp2_parents_kept   <- matrixTemp2_parents[myBoole1,]
+  
+  children_removed_dir = paste(pathTemp2, "HierarchicalClustering_children_removed", sep="/")
+  if( ! file.exists(children_removed_dir) ) { dir.create(children_removed_dir, recursive = TRUE) }
+  myHierarchicalClustering_1_g(  mat_3three=matrixTemp2_children_removed,   
+                                 path_temp1=children_removed_dir,   dataFrame_temp1=NULL  ) 
+  
+  children_kept_dir = paste(pathTemp2, "HierarchicalClustering_children_kept", sep="/")
+  if( ! file.exists(children_kept_dir) ) { dir.create(children_kept_dir, recursive = TRUE) }
+  myHierarchicalClustering_1_g(  mat_3three=matrixTemp2_children_kept,   
+                                 path_temp1=children_kept_dir,   dataFrame_temp1=NULL  ) 
+  
+  
+  parents_removed_dir = paste(pathTemp2, "HierarchicalClustering_parents_removed", sep="/")
+  if( ! file.exists(parents_removed_dir) ) { dir.create(parents_removed_dir, recursive = TRUE) }
+  myHierarchicalClustering_1_g(  mat_3three=matrixTemp2_parents_removed,   
+                                 path_temp1=parents_removed_dir,   dataFrame_temp1=NULL  ) 
+  
+  parents_kept_dir = paste(pathTemp2, "HierarchicalClustering_parents_kept", sep="/")
+  if( ! file.exists(parents_kept_dir) ) { dir.create(parents_kept_dir, recursive = TRUE) }
+  myHierarchicalClustering_1_g(  mat_3three=matrixTemp2_parents_kept,   
+                                 path_temp1=parents_kept_dir,   dataFrame_temp1=NULL  ) 
+  
+}
+
+
+
+
+
+
+##################################################################################################################
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "4_rmParetns_SD_top0.001",  sep="/"), 
+               percentTemp2 = 0.001, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "5_rmParetns_SD_top0.01",  sep="/"), 
+               percentTemp2 = 0.01, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "6_rmParetns_SD_top0.02",  sep="/"), 
+               percentTemp2 = 0.02, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "7_rmParetns_SD_top0.03",  sep="/"), 
+               percentTemp2 = 0.03, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "8_rmParetns_SD_top0.04",  sep="/"), 
+               percentTemp2 = 0.04, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "9_rmParetns_SD_top0.05",  sep="/"), 
+               percentTemp2 = 0.05, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+
+myTopPercent_1(matrixTemp2 = mat_2two_merge_g, sdParentsTemp2 = sd_2two_mergeParents_g, 
+               pathTemp2 = paste(outDir_g,   "10_rmParetns_SD_top0.1",  sep="/"), 
+               percentTemp2 = 0.1, sdMeanCV2 = sd_mean_cv_2two_mergeParents_g)
+
+
+
+##################################################################################################################
+
+
+
 
 
 
